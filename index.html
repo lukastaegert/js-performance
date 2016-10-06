@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Optimizing Javascript performance</title>
+
+    <meta name="description" content="What I learned about frontend performance">
+    <meta name="author" content="Lukas Taegert">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/presentation.css">
+    <link rel="stylesheet" href="css/editor.css">
+
+    <script src="js/jquery.js"></script>
+    <script src="revealeditor.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <header class="editor-button">
+        <a class="btn">&rarr; Editor</a>
+    </header>
+
+    <div class="reveal charred auto-fragment">
+
+        <!-- Any section element inside of this container is displayed as a slide -->
+        <div class="slides">
+            <div class="i18n">
+                <!-- FIXME: hier wenn gewünscht die Überschrift der Abschnitts-Übersichtseite ändern -->
+                <span class="section-overview">Übersicht</span>
+            </div>
+            <section data-title="Einführung">
+
+            <section>
+                <h1>Javascript Performance</h1>
+                <h3>What I learned about frontend performance optimization</h3>
+                <p style="padding-top:15%">
+                    <a href="mailto:lukas.taegert@tngtech.com">Lukas Taegert</a>,
+                    @JS CraftCamp 2016, Munich
+                </p>
+                <a href="http://www.tngtech.com"><img class="logo" src="img/tng.svg"></a>
+            </section>
+
+            </section>
+            <section>
+                <p> RevealEditor is an text editor built for HTML presentation platform <a href="https://github.com/hakimel/reveal.js">reveal.js</a>
+                </p>
+            </section>
+            <section>
+                <p>RevealEditor allows you to write and run Javascript, HTML, and CSS from within a presention and shows you the results
+                    without ever exiting fullscreen presentation mode.</p>
+            </section>
+            <section>
+                <p> Go ahead and click on the RevealEditor button on the top left corner and play around with the RevealEditor</p>
+            </section>
+            <section>
+                <section>
+                    <p> If want to take code from the slide you are currently on, then you can simply press the COPY button. </p>
+                    <p> For the COPY button to work properly, you must add the class 'js', 'html', or 'css' depending on the type of code
+                        being on the slide. </p>
+                </section>
+                <section>
+                    <h2>Javascript</h2>
+                    <pre><code class="hljs js" data-trim contenteditable>
+function add( x, y ) {
+    return x + y;
+}
+
+var val = add(3, 4);
+console.log(val);
+                        </code></pre>
+                </section>
+                <section>
+                    <h2>HTML</h2>
+                    <pre><code class="hljs html" data-trim contenteditable>
+<h1> Why penguins are better than people?</h1>
+<ul>
+    <li> They are cute. </li>
+    <li> They are good swimmers. </li>
+    <li> They look good in tuxes. </li>
+</ul>
+                        </code></pre>
+                </section>
+                <section>
+                    <h2>CSS</h2>
+                    <pre><code class="hljs css" data-trim contenteditable>
+body {
+    background: blue;
+}
+                        </code></pre>
+                </section>
+            </section>
+        </div>
+
+    </div>
+
+    <!-- Required Scripts -->
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script src="src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+
+        // Full list of configuration options available at:
+        // https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            history: true,
+            center: true,
+
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                {src: 'lib/js/classList.js', condition: function() { return !document.body.classList; }},
+                {src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector('[data-markdown]'); }},
+                {src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector('[data-markdown]'); }},
+                {src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); }},
+                {src: 'plugin/zoom-js/zoom.js', async: true},
+                {src: 'plugin/notes/notes.js', async: true}
+            ]
+        });
+        $(".btn").RevealEditor();
+    </script>
+
+</body>
+</html>

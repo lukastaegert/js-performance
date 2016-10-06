@@ -1,0 +1,104 @@
+.editor {
+    display: none;
+    z-index: 9999;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: "Lato", sans-serif;
+}
+
+.editor a, .editor p {
+    font-size: 3vmin;
+}
+
+.editor p {
+    margin: 0;
+    font-family: monospace;
+    padding: 0.1em;
+    margin-left: 0.5em;
+}
+
+/* Control Styling */
+.editor .controls {
+    width: 100%;
+    background: white;
+    height: 7vmin;
+}
+
+.editor .controls a {
+    color: #777;
+    cursor: pointer;
+    display: inline-block;
+    padding: 2vmin;
+}
+
+.editor .controls a.active, .editor .controls a:hover {
+    color: green;
+}
+
+.editor .controls a.close:hover {
+    color: red;
+}
+
+.editor .controls .lg, .editor .controls .sm {
+    float: right;
+    font-size: 3vmin;
+    font-weight: bolder;
+    padding: 2vmin 2vmin;
+}
+
+/* Panel Styling */
+.editor .panel {
+    width: 50%;
+    height: 100%;
+    position: relative;
+}
+
+.editor .output {
+    float: right;
+    background: #eee;
+}
+
+.editor .input {
+    float: left;
+}
+
+.editor .ace {
+    margin: 0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0; 
+    font-size: 3vmin;
+}
+
+.editor .wrapper {
+    width: 100%;
+    height: 93%;
+    position: relative;
+    overflow-x: scroll;
+    top: 0;
+}
+
+.editor pre:not(.active) {
+    display: none;
+}
+
+.editor .iframe {
+    border: none;
+}
+
+header.editor-button {
+    background: #fff;
+    color: #888;
+    padding: 0.5em 2.5em;
+}
+header.editor-button a.btn {
+    cursor: pointer;
+    font-family: "Lato", sans-serif;
+    font-size: 3vmin;
+    text-decoration: none;
+}
