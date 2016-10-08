@@ -15,9 +15,10 @@
 
     <link rel="stylesheet" href="css/presentation.css">
     <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/charred-trail.css">
 
     <script src="js/jquery.js"></script>
-    <script src="revealeditor.js"></script>
+    <script src="js/revealeditor.js"></script>
 
     <!--[if lt IE 9]>
     <script src="lib/js/html5shiv.js"></script>
@@ -29,18 +30,12 @@
         <a class="btn">&rarr; Editor</a>
     </header>
 
-    <div class="reveal charred auto-fragment">
+    <div class="reveal">
 
         <!-- Any section element inside of this container is displayed as a slide -->
         <div class="slides">
-            <div class="i18n">
-                <!-- FIXME: hier wenn gewünscht die Überschrift der Abschnitts-Übersichtseite ändern -->
-                <span class="section-overview">Übersicht</span>
-            </div>
-            <section data-title="Einführung">
-
             <section>
-                <h1>Javascript Performance</h1>
+                <h1>JS Performance</h1>
                 <h3>What I learned about frontend performance optimization</h3>
                 <p style="padding-top:15%">
                     <a href="mailto:lukas.taegert@tngtech.com">Lukas Taegert</a>,
@@ -49,54 +44,384 @@
                 <a href="http://www.tngtech.com"><img class="logo" src="img/tng.svg"></a>
             </section>
 
-            </section>
-            <section>
-                <p> RevealEditor is an text editor built for HTML presentation platform <a href="https://github.com/hakimel/reveal.js">reveal.js</a>
-                </p>
-            </section>
-            <section>
-                <p>RevealEditor allows you to write and run Javascript, HTML, and CSS from within a presention and shows you the results
-                    without ever exiting fullscreen presentation mode.</p>
-            </section>
-            <section>
-                <p> Go ahead and click on the RevealEditor button on the top left corner and play around with the RevealEditor</p>
-            </section>
             <section>
                 <section>
-                    <p> If want to take code from the slide you are currently on, then you can simply press the COPY button. </p>
-                    <p> For the COPY button to work properly, you must add the class 'js', 'html', or 'css' depending on the type of code
-                        being on the slide. </p>
+                    <h2><strong>PART 1</strong></h2>
+                    <h2>Keep going at 60 FPS</h2>
+                    <p>How to keep the animation loop looping</p>
                 </section>
+
                 <section>
-                    <h2>Javascript</h2>
+                    <h2>What are animation frames?</h2>
+                    <ul>
+                        <li class="fragment">Let callbacks fire at next screen refresh<br>("animation frame")</li>
+                        <li class="fragment">At most 60 animation frames per second</li>
+                        <li class="fragment">Callbacks registered during one frame will fire at the next</li>
+                        <li class="fragment">CSS animations use the same animation frames</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Animation frames are aggregated</h2>
                     <pre><code class="hljs js" data-trim contenteditable>
-function add( x, y ) {
-    return x + y;
+function printTimeStamp(timeStamp) {
+    console.log(timeStamp);
 }
 
-var val = add(3, 4);
-console.log(val);
-                        </code></pre>
+// Those all fire at the same time
+requestAnimationFrame(printTimeStamp);
+for (let i = 0; i < 1000; i++) {}
+requestAnimationFrame(printTimeStamp);
+requestAnimationFrame(printTimeStamp);
+for (let i = 0; i < 1000; i++) {}
+requestAnimationFrame(printTimeStamp);
+                </code></pre>
                 </section>
+
                 <section>
-                    <h2>HTML</h2>
-                    <pre><code class="hljs html" data-trim contenteditable>
-<h1> Why penguins are better than people?</h1>
-<ul>
-    <li> They are cute. </li>
-    <li> They are good swimmers. </li>
-    <li> They look good in tuxes. </li>
-</ul>
-                        </code></pre>
-                </section>
-                <section>
-                    <h2>CSS</h2>
-                    <pre><code class="hljs css" data-trim contenteditable>
-body {
-    background: blue;
+                    <p>You can measure your frame rate with an</p>
+                    <h2>animation loop</h2>
+                    <pre class="fragment"><code class="hljs js" data-trim contenteditable>
+                    let startTimeStamp = 0, counter = 0;
+
+function measureFrameRate(timeStamp) {
+    if (counter < 9) counter++;
+    else {
+        counter = 0;
+        document.querySelector('#out').textContent =
+            10000 / (timeStamp - startTimeStamp);
+        startTimeStamp = timeStamp;
+    }
+    requestAnimationFrame(measureFrameRate);
 }
-                        </code></pre>
+
+requestAnimationFrame(measureFrameRate);
+                </code></pre>
                 </section>
+
+                <section>
+                    <p>
+                        If there are long running calculations or<br>
+                        if all your animation frames together<br>
+                        take longer than 16ms, you will
+                    </p>
+                    <h2>
+                        drop frames
+                    </h2>
+                </section>
+
+                <section>
+                    <h2>
+                        Should you chop down synchronous code?
+                    </h2>
+                    <pre><code class="hljs js" data-trim contenteditable>
+console.time('myTimer');
+
+for (let i = 0; i < 10000; i++) {}
+
+console.timeEnd('myTimer');
+                </code></pre>
+                </section>
+
+                <section>
+                    <p>Nice library to split up code:</p>
+                    <h2>
+                        async
+                    </h2>
+                    <a href="http://caolan.github.io/async/">caolan.github.io/async</a>
+                    <p class="fragment">Countless patterns to make<br>common control flow structures asynchronous</p>
+                </section>
+
+                <section>
+                    <p>Let's calculate pi</p>
+                    <pre><code class="hljs js" data-trim contenteditable>
+let pi = 0, count = 1;
+
+function makeBetterPi() {
+    pi += 4 * Math.pow(-1, count + 1)/(2*count - 1);
+    count++;
+}
+
+while (count < 1000000) {
+    makeBetterPi();
+    document.querySelector('#out').textContent = pi;
+}
+                </code></pre>
+                    <p class="fragment no-burn" data-fragment-index="1">Using async</p>
+                    <pre class="fragment no-burn" data-fragment-index="1"><code class="hljs js" data-trim contenteditable>
+async.timesSeries(1000, (n, done) => {
+    do makeBetterPi();
+    while (count % 1000 !== 0);
+    document.querySelector('#out').textContent = pi;
+    setTimeout(done);
+});
+                </code></pre>
+                </section>
+
+                <section>
+                    <h2>async keeps animations fluid!</h2>
+                    <p class="fragment no-burn">but:</p>
+                    <h2 class="fragment no-burn">async wastes time!</h2>
+                    <p class="fragment">Is there a way to optimize the chunk size?</p>
+                </section>
+
+                <section>
+                    <h2>performance.now()</h2>
+                    <ul>
+                        <li class="fragment no-burn">Returns high resolution time stamp: +/- 0.001ms</li>
+                        <li class="fragment">Date.now(): +/- 10ms</li>
+                        <li class="fragment">Timestamp relative to app start time</li>
+                        <li class="fragment">Available in all modern browsers</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <p>A self-optimizing loop:</p>
+                    <pre class="fragment no-burn"><code class="hljs js" data-trim contenteditable>
+let pi = 0, count = 1;
+
+function makeBetterPi() {
+    pi += 4 * Math.pow(-1, count + 1)/(2*count - 1);
+    count++;
+}
+
+async.whilst(() => count < 1000000, done => {
+    const startTime = performance.now();
+    do makeBetterPi();
+    while (performance.now() - startTime < 5);
+    document.querySelector('#out').textContent = pi;
+    setTimeout(done);
+});
+                </code></pre>
+                    <p class="fragment">Much faster! But we can do even more...</p>
+                </section>
+
+                <section>
+                    <p>Browsers may throttle setTimeout to</p>
+                    <h2 class="fragment no-burn">>4ms!</h2>
+                    <p class="fragment">(and <em>>1000ms</em> in inactive tabs!)</p>
+                </section>
+
+                <section>
+                    <h2>Faster than setTimeout</h2>
+                    <pre class="fragment no-burn"><code class="hljs js" data-trim contenteditable>
+const startTime = performance.now();
+
+function printTime() {
+    console.log('received after ' + (performance.now() - startTime));
+}
+
+window.addEventListener('message', printTime, true);
+window.postMessage('mymessage', '*');
+                </code></pre>
+                    <p class="fragment no-burn">Nice polyfills:</p>
+                    <ul>
+                        <li class="fragment no-burn"><a href="https://github.com/yuzujs/setImmediate">setimmediate</a></li>
+                        <li class="fragment no-burn"><a href="https://github.com/taylorhakes/setAsap">setasap</a></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Summary</h2>
+                    <ul>
+                        <li class="fragment">Synchronous code should never exceed <strong>15ms</strong></li>
+                        <li class="fragment">Use <strong>console.time()</strong> for quick measurements</li>
+                        <li class="fragment">Use <strong>async and setTimeout()</strong> to split up code</li>
+                        <li class="fragment">Make code self-optimizing with <strong>performance.now()</strong></li>
+                        <li class="fragment">There are <strong>faster alternatives</strong> to setTimeout()</li>
+                    </ul>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2><strong>PART 2</strong></h2>
+                    <h2>Let's be actually fast</h2>
+                    <p>Maxing out JavaScript performance</p>
+                </section>
+
+                <section>
+                    <p>Don't optimize what does not need optimizing!</p>
+                    <h2 class="fragment">Clean Code > Fast Code!</h2>
+                </section>
+
+                <section>
+                    <p>A useful shortcut:</p>
+                    <pre><code class="hljs js" data-trim contenteditable>
+function measure(func) {
+    const startTime = performance.now();
+    func();
+    console.log(performance.now() - startTime);
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Arrays</h2>
+                    <p class="fragment no-burn" data-fragment-index="1">push() is not always efficient:</p>
+                    <pre class="fragment no-burn" data-fragment-index="1"><code class="hljs js" data-trim contenteditable>
+let array = []; array.length = 10000;
+measure(() => {
+    for (let i = 0; i < 10000; i++) array[i] = i;
+});
+                    </code></pre>
+                    <p class="fragment no-burn" data-fragment-index="2">vs.</p>
+                    <pre class="fragment no-burn" data-fragment-index="2"><code class="hljs js" data-trim contenteditable>
+array = [];
+measure(() => {
+    for (let i = 0; i < 10000; i++) array.push(i);
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <p>Pushing into arrays as well as out-of-bounds writing<br>can lead to multiple small memory allocations.</p>
+                    <p class="fragment no-burn">If you can, set the array length first, than write its contents.</p>
+                </section>
+
+                <section>
+                    <p>If you use indexOf() more than once,<br>consider building an inverse map: </p>
+                    <pre><code class="hljs js" data-trim contenteditable>
+let source = [];
+for (let i = 0; i < 10000; i++) source.push(-i);
+
+let test = [];
+for (let i = 0; i < 10000; i++)
+    test.push(-Math.floor(Math.random() * 10000));
+
+measure(() => {
+    test.forEach(value => source.indexOf(value));
+});
+                    </code></pre>
+                    <p class="fragment no-burn" data-fragment-index="1">vs.</p>
+                    <pre class="fragment no-burn" data-fragment-index="1"><code class="hljs js" data-trim contenteditable>
+measure(() => {
+    let sourceMap = {};
+    source.forEach((value, index) => sourceMap[value] = index);
+    test.forEach(value => sourceMap[value]);
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Consider your worst case scenario!</h3>
+                    <p class="fragment no-burn">Building an inverse map is an O(n) operation<br>
+                        that can sometimes prevent an O(n
+                        <small><sup>2</sup></small>
+                        ) operation!
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Classes vs. Function Scopes</h2>
+                    <p class="fragment no-burn" data-fragment-index="1">Accessing instance variables:</p>
+                    <pre class="fragment no-burn" data-fragment-index="1"><code class="hljs js" data-trim contenteditable>
+class MyClass {
+    constructor() {
+        this.awesomeValue = 'my string';
+    }
+
+    getValue() {
+        return this.awesomeValue;
+    }
+}
+
+const classObject = new MyClass();
+measure(() => {
+    for (let i = 0; i< 10000; i++) classObject.getValue();
+});
+                    </code></pre>
+
+                </section>
+                <section>
+                    <p>Accessing closure variables:</p>
+                    <pre><code class="hljs js" data-trim contenteditable>
+const myFunctionScope = () => {
+    const awesomeValue = 'my string';
+    const getValue = () => awesomeValue;
+
+    return {getValue};
+};
+
+const functionObject = myFunctionScope();
+measure(() => {
+    for (let i = 0; i< 10000; i++) functionObject.getValue();
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Takeaway:</h2>
+                    <p class="fragment" data-fragment-index="0">Function scopes are faster with regard to variable access.</p>
+                    <p class="fragment" data-fragment-index="1">Classes are faster when multiple objects<br> need to be created due to
+                        better code re-use.</p>
+                    <h2 class="fragment no-burn fade-down" data-fragment-index="2">Pro Tip:</h2>
+                    <p class="fragment no-burn fade-up" data-fragment-index="2">Use a factory pattern to hide your implementation
+                        details!</p>
+                </section>
+
+                <section>
+                    <h2>Deleting properties</h2>
+                    <p class="fragment no-burn" data-fragment-index="1">delete can be expensive:</p>
+                    <pre class="fragment no-burn" data-fragment-index="1"><code class="hljs js" data-trim contenteditable>
+let object = {};
+for (let i = 0; i < 10000; i++) object[i] = i;
+
+measure(() => {
+    for (let i = 0; i < 10000; i++) delete object[i];
+});
+                    </code></pre>
+                    <p class="fragment no-burn" data-fragment-index="2">vs.</p>
+                    <pre class="fragment no-burn" data-fragment-index="2"><code class="hljs js" data-trim contenteditable>
+measure(() => {
+    for (let i = 0; i < 10000; i++) object[i] = null;
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Argument objects</h2>
+                    <pre class="fragment no-burn" data-fragment-index="1"><code class="hljs js" data-trim contenteditable>
+function testDirect(value1, value2, value3) {}
+measure(() => {
+    for (let i = 0; i < 10000; i++) testDirect(1, 2, 3);
+});
+                    </code></pre>
+                    <p class="fragment no-burn" data-fragment-index="2">vs.</p>
+                    <pre class="fragment no-burn" data-fragment-index="2"><code class="hljs js" data-trim contenteditable>
+function testObject({value1, value2, value3}) {}
+measure(() => {
+    for (let i = 0; i < 10000; i++)
+        testObject({value1: 1, value2: 2, value3: 3});
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Cleaner code!</h2>
+                    <h2 class="fragment no-burn">Bad performance</h2>
+                    <p class="fragment no-burn">Can create lots of small objects<br>
+                        that need to be garbage collected</p>
+                </section>
+
+                <section>
+                    <h2>Summary</h2>
+                    <ul>
+                        <li class="fragment">Pre-determine <strong>array sizes</strong> if you can</li>
+                        <li class="fragment">indexOf() has complexity O(n) - consider using<br>
+                            <strong>inverse maps</strong></li>
+                        <li class="fragment"><strong>function scopes</strong> have better performance than classes<br>
+                            when only few instances are created
+                        </li>
+                        <li class="fragment"><strong>Avoid deleting</strong> large amounts of properties</li>
+                        <li class="fragment">Use <strong>argument objects</strong> with care</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <h1>Thank you!</h1>
+                <p><a href="mailto:lukas.taegert@tngtech.com">lukas.taegert@tngtech.com</a><br>
+                    github: <a href="https://github.com/lukastaegert">lukastaegert</a></p>
             </section>
         </div>
 
@@ -105,31 +430,32 @@ body {
     <!-- Required Scripts -->
     <script src="lib/js/head.min.js"></script>
     <script src="js/reveal.js"></script>
-    <script src="src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
 
-        // Full list of configuration options available at:
-        // https://github.com/hakimel/reveal.js#configuration
-        Reveal.initialize({
-            controls: true,
-            progress: true,
-            history: true,
-            center: true,
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
 
-            transition: 'slide', // none/fade/slide/convex/concave/zoom
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
 
-            // Optional reveal.js plugins
-            dependencies: [
-                {src: 'lib/js/classList.js', condition: function() { return !document.body.classList; }},
-                {src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector('[data-markdown]'); }},
-                {src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector('[data-markdown]'); }},
-                {src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); }},
-                {src: 'plugin/zoom-js/zoom.js', async: true},
-                {src: 'plugin/notes/notes.js', async: true}
-            ]
-        });
-        $(".btn").RevealEditor();
+        // Optional reveal.js plugins
+        dependencies: [
+          {src: 'lib/js/classList.js', condition: function() { return !document.body.classList; }},
+          {src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector('[data-markdown]'); }},
+          {src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector('[data-markdown]'); }},
+          {src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); }},
+          {src: 'plugin/zoom-js/zoom.js', async: true},
+          {src: 'plugin/notes/notes.js', async: true},
+          {src: 'plugin/charred-trail/charred-trail.js', async: true, condition: function() { return !!document.body.classList; }}
+        ]
+      });
+      $(".btn").RevealEditor();
     </script>
 
 </body>

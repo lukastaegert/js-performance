@@ -99,7 +99,9 @@
                 htmleditor.session.setMode("ace/mode/css");
             }
         }
-        
+
+        var measure = 'function measure(func){const start=performance.now();func();console.log(performance.now()-start);}';
+
         // Sets Up Editor controls
         function setUpControls(este) {
             este.on("click", function () {
@@ -112,7 +114,7 @@
                     css = parseCSS(),
                     html = parseHtml(),
                     t = "<script> var div = parent.document.body.getElementsByClassName('console'); var console = {panel: div,log: function(m){this.panel[0].innerHTML = this.panel[0].innerHTML + '<p>' + m + '</p>';} }; </script>",
-                    s = t + "<style class='style'>" + css + "</style>" + html + "<script class='script'>" + js + "</script>";
+                    s = t + "<style class='style'>" + css + "</style>" + html + "<script src='js/async.js'></script>" + "<script class='script'>" + measure + js + "</script>";
                 $(".iframe").attr("srcdoc", s);
             });
 
